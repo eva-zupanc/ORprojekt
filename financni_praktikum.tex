@@ -1,0 +1,120 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[slovene]{babel}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb}
+\usepackage{geometry}
+\usepackage{microtype}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage[hidelinks]{hyperref}
+
+\geometry{left=2.35cm,right=2.35cm,top=2.15cm,bottom=2.15cm}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+\setlist[enumerate]{leftmargin=*,itemsep=3pt,topsep=3pt}
+\setlist[itemize]{leftmargin=*,itemsep=2pt,topsep=2pt}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0pt}
+\setcounter{secnumdepth}{0}
+
+\begin{document}
+\begin{center}
+    {\LARGE\bfseries Projekt 8: Inducirani 2-regularni podgrafi kubičnih grafov}\\[5pt]
+    {\large Predstavitev problema in načrt projektnega dela}
+\end{center}
+\vspace{3pt}
+
+\section{Namen in matematično ozadje}
+
+Cilj projektne naloge je z računalniškimi metodami preučiti \emph{inducirane 2-regularne podgrafe kubičnih grafov}. Kubični graf
+je graf, v katerem ima vsako vozlišče natanko tri sosede. Podgraf, induciran z množico vozlišč
+$S$, označimo z $G[S]$; vsebuje vsa vozlišča iz $S$ in vse povezave prvotnega grafa med
+njimi. Podgraf je 2-regularen, kadar ima vsako njegovo vozlišče natanko dva soseda znotraj tega podgrafa.
+Tak podgraf je zato unija med seboj disjunktnih ciklov.
+
+Osrednja količina, ki jo bomo računali, je
+\begin{equation}
+    c_{\mathrm{ind}}(G)
+    =\max\bigl\{|S|:\ S\subseteq V(G),\ G[S]\text{ je 2-regularen}\bigr\}.
+\end{equation}
+Pove nam, koliko vozlišč lahko največ izberemo, da bodo vsa izbrana vozlišča sestavljala inducirane cikle.
+Za kubični graf z $n=|V(G)|$ vozlišči nas bo posebej zanimala razlika
+\[
+    \Delta(G)=c_{\mathrm{ind}}(G)-\frac{n}{2}.
+\]
+Ker je vsota stopenj $3n=2|E(G)|$, imajo kubični grafi sodo število vozlišč. Iskali bomo kubične grafe,
+pri katerih je $\Delta(G)$ čim manjša, in z računalniškimi poskusi preverjali \emph{Domnevo 4} iz projektnih
+navodil. Pomembno je poudariti, da računanje na končnem številu primerov samo po sebi ne pomeni
+splošnega dokaza domneve, lahko pa odkrije protiprimer ali ponudi koristne ugotovitve.
+
+\section{Metoda: celoštevilsko linearno programiranje}
+
+Najprej bomo razvili program za natančen izračun $c_{\mathrm{ind}}(G)$. Za vsako vozlišče $v$ uvedemo binarno spremenljivko
+$x_v\in\{0,1\}$, ki pove, ali smo vozlišče izbrali v množico $S$. Nato rešimo optimizacijski problem
+\begin{align*}
+    \text{maksimiziraj}\quad & \sum_{v\in V(G)}x_v,\\[-2pt]
+    \text{pri pogojih}\quad & \sum_{u\in N(v)}x_u\geq 2x_v
+    &&\text{za vsak }v\in V(G),\\[-2pt]
+    & \sum_{u\in N(v)}x_u\leq 3-x_v
+    &&\text{za vsak }v\in V(G).
+\end{align*}
+Tu $N(v)$ označuje množico sosedov vozlišča $v$. Če velja $x_v=1$, pogoja zahtevata, da ima $v$
+natanko dva izbrana soseda; s tem je $G[S]$ 2-regularen. Ciljna funkcija pa poskrbi, da je
+izbrana množica čim večja.
+
+Model bomo implementirali v Pythonu, na primer s knjižnicama \texttt{NetworkX} za delo z grafi in
+\texttt{PuLP} oziroma drugim reševalnikom za celoštevilsko linearno programiranje. Program bo vrnil vrednost $c_{\mathrm{ind}}(G)$ in pripadajočo
+optimalno množico $S$. Pravilnost bomo najprej preverili na manjših znanih grafih: $K_4$, $K_{3,3}$, prizmi, Petersenovem
+in Franklinovem grafu. Pri vsakem rezultatu bomo dodatno preverili, da imajo vsa vozlišča podgrafa $G[S]$
+stopnjo dve.
+
+\section{Računalniško raziskovanje posebnih družin grafov}
+
+Ker so bili kubični grafi z največ 22 vozlišči po navodilih že pregledani, bomo pozornost
+usmerili na večje grafe. Preizkusili bomo več posebej zanimivih družin: kubične grafe z velikim obsegom
+najkrajšega cikla (\emph{girth}), snarke, posplošene Petersenove grafe $P(n,k)$ in ravninske kubične grafe.
+
+Grafov ne bomo nujno generirali vseh naenkrat. Pri manjših redih bomo lahko uporabili generator \texttt{geng},
+za večje grafe in grafe z večjim obsegom najkrajšega cikla pa tudi javno dostopne zbirke,
+na primer \emph{House of Graphs}. Za vsak pregledani graf bomo izračunali $c_{\mathrm{ind}}(G)$ in $\Delta(G)$ ter
+zabeležili primere z najmanjšimi vrednostmi. Rezultate bomo primerjali med družinami grafov in ugotavljali, katere strukturne
+lastnosti se pojavljajo pri posebej majhnih vrednostih $\Delta(G)$.
+
+\section{Iskanje zahtevnejših primerov}
+
+Za večje rede, okvirno $24\leq n\leq 60$, bomo uporabili tudi hevristično iskanje s \emph{simuliranim ohlajanjem}
+(angl. \emph{simulated annealing}). Začeli bomo s povezanim enostavnim kubičnim grafom, nato pa bomo s preklopi
+povezav ustvarjali nove kubične grafe. Pri tem bomo pazili, da graf ostane enostaven, povezan in
+3-regularen.
+
+Cilj iskanja bo zmanjševanje vrednosti $\Delta(G)$. Ker ta pri fiksnem $n$ zavzame le malo celoštevilskih
+vrednosti, bomo lahko dodali še pomožni kriterij, na primer število kratkih induciranih ciklov, da bo
+iskanje lažje razlikovalo med podobno dobrimi kandidati. Za vsak obravnavani red grafa bomo poskusili poiskati
+najmanjšo doseženo vrednost $\Delta(G)$, shranili ustrezne grafe in jih primerjali s trilobiti ter Franklinovim grafom.
+
+\section{Način primerjave in preverjanje zanesljivosti}
+
+Pri rezultatih bomo dosledno ločevali med \emph{natančnim izračunom} optimuma za posamezen graf in \emph{hevristično najdenim}
+grafom z majhno vrednostjo $\Delta(G)$. Simulirano ohlajanje ne zagotavlja, da smo našli najboljši graf med
+vsemi kubičnimi grafi danega reda. Zato bomo poskuse z različnimi začetnimi grafi in naključnimi semeni
+večkrat ponovili, zanimive kandidate pa vedno dodatno ovrednotili z natančnim celoštevilskim modelom.
+
+Za primerljivost poskusov bomo shranjevali red grafa, njegovo družino, vrednosti $c_{\mathrm{ind}}(G)$ in $\Delta(G)$, izbrano množico
+vozlišč $S$ ter po možnosti tudi čas računanja. Posebej pomembne grafe bomo shranili v prenosljivi
+obliki, na primer v zapisu \texttt{graph6}, kar bo omogočalo ponovno preverjanje in prikaz najdenih primerov.
+
+\section{Pričakovani rezultat in poročilo}
+
+Končni rezultat projekta bo delujoč program za izračun $c_{\mathrm{ind}}(G)$, skupaj z računalniškimi poskusi na izbranih
+družinah grafov in z rezultati hevrističnega iskanja. Pripravili bomo preglednico najmanjših najdenih vrednosti $\Delta(G)$ po
+številu vozlišč, opise oziroma zapise najbolj zanimivih grafov ter primerjavo s poznanimi primeri. Če bomo
+našli protiprimer Domnevi 4, ga bomo posebej izpostavili in preverili z natančnim optimizacijskim postopkom. Po
+želji bomo za izbrane grafe dodatno izračunali še $(1,2)$-dominacijsko število $\gamma_{1,2}(G)$ in ga primerjali s
+$c_{\mathrm{ind}}(G)$.
+
+\end{document}
