@@ -47,25 +47,3 @@ def c_ind(G):
 
     return len(S), S
 
-
-# Ustvarimo grafe
-grafi = {
-    "K4": nx.complete_graph(4),
-    "K3,3": nx.complete_bipartite_graph(3, 3),
-    "Prizma": nx.circular_ladder_graph(3),
-    "Petersen": nx.petersen_graph(),
-    "Franklin": nx.LCF_graph(12, [5, -5], 6)
-}
-
-
-# Izracunamo in preverimo rezultate
-for ime, G in grafi.items():
-    vrednost, S = c_ind(G)
-
-    H = G.subgraph(S)
-    pravilno = all(H.degree(v) == 2 for v in S)
-
-    print(f"\nGraf: {ime}")
-    print(f"c_ind(G) = {vrednost}")
-    print(f"Mnozica S = {sorted(S)}")
-    print(f"2-regularen: {pravilno}")
