@@ -1,0 +1,14 @@
+# LaTeX pomožne datoteke
+*.aux
+*.log
+*.out
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+
+# Python pomožne datoteke
+__pycache__/
+*.pyc
+
+# VS Code
+.vscode/
