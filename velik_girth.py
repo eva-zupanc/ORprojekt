@@ -9,7 +9,7 @@ from financni_praktikum import c_ind
 
 
 # Stevila vozlisc, ki jih zelimo pregledati
-velikosti = [22]
+velikosti = [24]
 
 # Mapa projekta
 mapa = Path(__file__).resolve().parent
@@ -105,3 +105,10 @@ for n in velikosti:
 #Najmanjsa delta: 1
 #Grafi z najmanjso delto: [26]
 #Shranjeno v: rezultati_girth22.csv
+
+# Za n=24 bi trajalo predolgo, sem dala girth vsaj 6 (zamenjala tf s tfp)
+#REZULTATI ZA n=24
+#Stevilo pregledanih grafov: 7574
+#Najmanjsa delta: 2
+#Grafi z najmanjso delto: [49, 51, 53, 142, 152, 973]
+#Shranjeno v: rezultati_girth24.csv
