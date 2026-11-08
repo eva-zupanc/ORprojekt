@@ -1,11 +1,8 @@
 import networkx as nx
 import random
 import math
-import time
-import csv
-import os
 
-from financni_praktikum import izracunaj_cind
+from funkcija_c_ind import izracunaj_cind
 
 
 # --- Pomožne funkcije za grafe ---
@@ -70,9 +67,37 @@ def delta_vrednost(G, c_ind):
     """Izračuna Delta(G) = c_ind(G) - n/2."""
     return c_ind - (len(G) / 2)
 
+def prestej_kratke_cikle(G, max_dolzina=5):
+    """
+    Prešteje inducirane cikle dolžine 3, 4, ..., max_dolzina.
+    Vrnemo skupno število.
+    """
+    st_kratkih = 0
+    # networkx.find_cycles vrne vse cikle, mi pa filtriramo po dolžini
+    for cycle in nx.simple_cycles(G, length_bound=max_dolzina):
+        if 3 <= len(cycle) <= max_dolzina:
+            st_kratkih += 1
+    return st_kratkih
+
+def izracunaj_ceno(G, n, beta=0.5):
+    """
+    Izračuna skupno 'ceno' grafa.
+    Primarni del: Delta(G) = c_ind(G) - n/2
+    Sekundarni del: beta * (število kratkih ciklov)
+    """
+    c_ind, _ = izracunaj_cind(G)
+    delta = c_ind - (n / 2)
+    
+    if beta > 0:
+        st_ciklov = prestej_kratke_cikle(G, max_dolzina=5)
+        return delta + (beta * st_ciklov), delta, st_ciklov
+    else:
+        return delta, delta, 0
+
+
 # --- Glavna funkcija simuliranega ohlajanja ---
 
-def simulirano_ohlajanje(n, zacetna_temp=1.0, koncna_temp=0.01, ohlajanje=0.9999, iteracij=10000, seme=None):
+def simulirano_ohlajanje(n, zacetna_temp=1.0, koncna_temp=0.01, ohlajanje=0.9999, iteracij=10000, seme=None, beta=0.5):
     """
     Izvaja simulirano ohlajanje za iskanje kubičnega grafa z n vozlišči 
     in čim manjšo vrednostjo Delta(G).
@@ -82,13 +107,14 @@ def simulirano_ohlajanje(n, zacetna_temp=1.0, koncna_temp=0.01, ohlajanje=0.9999
 
     # 1. Začetno stanje    
     trenutni_graf = nakljucni_kubicen_graf(n)
-    c_ind_trenutni, _ = izracunaj_cind(trenutni_graf)
-    delta_trenutni = c_ind_trenutni - (n / 2)
+    cena_trenutna, delta_trenutni, cikli_trenutni = izracunaj_ceno(trenutni_graf, n, beta)
     
     najboljsi_graf = trenutni_graf.copy()
+    najboljsa_cena = cena_trenutna
     najboljsi_delta = delta_trenutni
-    najboljsi_c_ind = c_ind_trenutni
-    
+    najboljsi_cikli = cikli_trenutni
+    najboljsi_c_ind, _ = izracunaj_cind(najboljsi_graf)
+
     T = zacetna_temp
     
     for i in range(iteracij):
@@ -97,11 +123,10 @@ def simulirano_ohlajanje(n, zacetna_temp=1.0, koncna_temp=0.01, ohlajanje=0.9999
         if nov_graf is None:
             continue
             
-        c_ind_nov, _ = izracunaj_cind(nov_graf)
-        delta_nov = c_ind_nov - (n / 2)
+        cena_nova, delta_nov, cikli_nov = izracunaj_ceno(nov_graf, n, beta)
 
-        # 3. Razlika v ciljni funkciji
-        razlika = delta_nov - delta_trenutni
+        # 3. Razlika v ciljni funkciji (tj. ceni)
+        razlika = cena_nova - cena_trenutna
         
         # 4. Odločitev o sprejemu (Metropolisov kriterij)
         # Metropolisov kriterij: koda začasno sprejme slabši graf od trenutnega, kar ji odpre pot do iskanja povsem drugačnih struktur grafov
@@ -113,12 +138,16 @@ def simulirano_ohlajanje(n, zacetna_temp=1.0, koncna_temp=0.01, ohlajanje=0.9999
             
         if sprejmi:
             trenutni_graf = nov_graf
+            cena_trenutna = cena_nova
             delta_trenutni = delta_nov
+
             # Posodobi najboljšega, če je potrebno
-            if delta_trenutni < najboljsi_delta:
+            if cena_trenutna < najboljsa_cena:
+                najboljsa_cena = cena_trenutna
                 najboljsi_delta = delta_trenutni
+                najboljsi_cikli = cikli_nov
                 najboljsi_graf = trenutni_graf.copy()
-                najboljsi_c_ind = c_ind_nov
+                najboljsi_c_ind = izracunaj_cind(najboljsi_graf)
         
         # 5. Znižaj temperaturo
         T = max(koncna_temp, T * ohlajanje)
@@ -134,5 +163,6 @@ def simulirano_ohlajanje(n, zacetna_temp=1.0, koncna_temp=0.01, ohlajanje=0.9999
         'seme': seme,
         'c_ind': najboljsi_c_ind,
         'delta': najboljsi_delta,
+        'st_kratkih_ciklov': najboljsi_cikli,
         'graph6': graph6_zapis
     }
