@@ -2,7 +2,7 @@ import networkx as nx
 import random
 import math
 
-from funkcija_c_ind import izracunaj_cind
+from funkcija_c_ind import c_ind
 
 
 # --- Pomožne funkcije za grafe ---
@@ -18,7 +18,8 @@ def je_povezan_in_kubicen(G):
 
 def nakljucni_kubicen_graf(n):
     """Generira naključen povezan kubičen graf z n vozlišči."""
-    if n % 2 != 0 or n < 4:
+    if n % 2 != 0 or n < 4:     
+    # sodost števila vozlišč izhaja iz leme o rokovanju (stopnja(G)*n=3*n mora biti sodo, torej mora biti n sodo)
         raise ValueError("n mora biti sodo in vsaj 4.")
     # Uporabimo networkx generator, nato preverimo pogoje
     while True:
@@ -63,10 +64,6 @@ def preklop_povezav(G):
             
     return None
 
-def delta_vrednost(G, c_ind):
-    """Izračuna Delta(G) = c_ind(G) - n/2."""
-    return c_ind - (len(G) / 2)
-
 def prestej_kratke_cikle(G, max_dolzina=5):
     """
     Prešteje inducirane cikle dolžine 3, 4, ..., max_dolzina.
@@ -85,8 +82,8 @@ def izracunaj_ceno(G, n, beta=0.5):
     Primarni del: Delta(G) = c_ind(G) - n/2
     Sekundarni del: beta * (število kratkih ciklov)
     """
-    c_ind, _ = izracunaj_cind(G)
-    delta = c_ind - (n / 2)
+    cind, _ = c_ind(G)
+    delta = cind - (n / 2)
     
     if beta > 0:
         st_ciklov = prestej_kratke_cikle(G, max_dolzina=5)
@@ -113,7 +110,7 @@ def simulirano_ohlajanje(n, zacetna_temp=1.0, koncna_temp=0.01, ohlajanje=0.9999
     najboljsa_cena = cena_trenutna
     najboljsi_delta = delta_trenutni
     najboljsi_cikli = cikli_trenutni
-    najboljsi_c_ind, _ = izracunaj_cind(najboljsi_graf)
+    najboljsi_cind, _ = c_ind(najboljsi_graf)
 
     T = zacetna_temp
     
@@ -147,7 +144,7 @@ def simulirano_ohlajanje(n, zacetna_temp=1.0, koncna_temp=0.01, ohlajanje=0.9999
                 najboljsi_delta = delta_trenutni
                 najboljsi_cikli = cikli_nov
                 najboljsi_graf = trenutni_graf.copy()
-                najboljsi_c_ind = izracunaj_cind(najboljsi_graf)
+                najboljsi_cind = c_ind(najboljsi_graf)
         
         # 5. Znižaj temperaturo
         T = max(koncna_temp, T * ohlajanje)
@@ -161,7 +158,7 @@ def simulirano_ohlajanje(n, zacetna_temp=1.0, koncna_temp=0.01, ohlajanje=0.9999
         'ohlajanje': ohlajanje,
         'iteracij': iteracij,
         'seme': seme,
-        'c_ind': najboljsi_c_ind,
+        'c_ind': najboljsi_cind,
         'delta': najboljsi_delta,
         'st_kratkih_ciklov': najboljsi_cikli,
         'graph6': graph6_zapis
