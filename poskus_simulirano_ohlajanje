@@ -1,0 +1,47 @@
+import csv
+import time
+import os
+from simulirano_ohlajanje import simulirano_ohlajanje
+
+def shrani_v_csv(rezultat, ime_datoteke='rezultati_ohlajanja.csv'):
+    """Doda eno vrstico v CSV datoteko."""
+    file_exists = os.path.isfile(ime_datoteke)
+    
+    # Ključi, ki jih želimo v CSV (vrstni red je pomemben)
+    polja = ['n', 'zacetna_temp', 'koncna_temp', 'ohlajanje', 'iteracij', 'seme', 'c_ind', 'delta', 'graph6', 'cas']
+    
+    with open(ime_datoteke, mode='a', newline='') as file:
+        writer = csv.DictWriter(file, fieldnames=polja)
+        if not file_exists:
+            writer.writeheader() # Napiši glavo, če datoteka še ne obstaja
+            
+        rezultat['cas'] = time.strftime("%Y-%m-%d %H:%M:%S")
+        writer.writerow(rezultat)
+
+if __name__ == "__main__":
+    # --- NASTAVITVE POSKUSA ---
+    velikosti_grafov = [24, 30, 40]  # Za katere n-je želimo iskati
+    st_ponovitev = 5                 # Kolikokrat poženemo za vsak n (različna semena)
+    
+    print("Začenjam serijo poskusov...")
+    
+    for n in velikosti_grafov:
+        for seme in range(1, st_ponovitev + 1):
+            print(f"\nPoganjam: n={n}, seme={seme} ...")
+            
+            # Poženemo simulacijo
+            rezultat = simulirano_ohlajanje(
+                n=n, 
+                zacetna_temp=2.0,   # Malo višja začetna temperatura za boljše raziskovanje
+                koncna_temp=0.01, 
+                ohlajanje=0.9995,   # Počasnejše ohlajanje pomeni daljše iskanje
+                iteracij=20000,     # Število korakov
+                seme=seme
+            )
+            
+            # Shranimo rezultat
+            shrani_v_csv(rezultat)
+            
+            print(f"  -> Najdena Delta: {rezultat['delta']}, c_ind: {rezultat['c_ind']}")
+
+    print("\nVsi poskusi zaključeni. Rezultati so v 'rezultati_ohlajanja.csv'.")

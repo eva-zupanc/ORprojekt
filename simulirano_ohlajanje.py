@@ -79,15 +79,12 @@ def simulirano_ohlajanje(n, zacetna_temp=1.0, koncna_temp=0.01, ohlajanje=0.9999
     """
     if seme is not None:
         random.seed(seme)
-        
-    print(f"Začenjam iskanje za n={n}...")
-    
-    # 1. Začetno stanje
+
+    # 1. Začetno stanje    
     trenutni_graf = nakljucni_kubicen_graf(n)
     c_ind_trenutni, _ = izracunaj_cind(trenutni_graf)
-    delta_trenutni = delta_vrednost(trenutni_graf, c_ind_trenutni)
+    delta_trenutni = c_ind_trenutni - (n / 2)
     
-    # Najboljše stanje do zdaj
     najboljsi_graf = trenutni_graf.copy()
     najboljsi_delta = delta_trenutni
     najboljsi_c_ind = c_ind_trenutni
@@ -98,74 +95,44 @@ def simulirano_ohlajanje(n, zacetna_temp=1.0, koncna_temp=0.01, ohlajanje=0.9999
         # 2. Generiraj sosednje stanje (nov graf)
         nov_graf = preklop_povezav(trenutni_graf)
         if nov_graf is None:
-            continue  # Preklop ni uspel, poskusi znova
+            continue
             
         c_ind_nov, _ = izracunaj_cind(nov_graf)
-        delta_nov = delta_vrednost(nov_graf, c_ind_nov)
-        
+        delta_nov = c_ind_nov - (n / 2)
+
         # 3. Razlika v ciljni funkciji
         razlika = delta_nov - delta_trenutni
         
         # 4. Odločitev o sprejemu (Metropolisov kriterij)
         # Metropolisov kriterij: koda začasno sprejme slabši graf od trenutnega, kar ji odpre pot do iskanja povsem drugačnih struktur grafov
         if razlika < 0:
-            # Nov graf je boljši, vedno ga sprejmi
             sprejmi = True
         else:
-            # Nov graf je slabši, sprejmi ga z določeno verjetnostjo
             verjetnost = math.exp(-razlika / T) if T > 0 else 0
             sprejmi = random.random() < verjetnost
             
         if sprejmi:
             trenutni_graf = nov_graf
             delta_trenutni = delta_nov
-            
             # Posodobi najboljšega, če je potrebno
             if delta_trenutni < najboljsi_delta:
                 najboljsi_delta = delta_trenutni
                 najboljsi_graf = trenutni_graf.copy()
                 najboljsi_c_ind = c_ind_nov
-                print(f"  Iteracija {i}: Našli smo boljši graf! Delta = {najboljsi_delta}")
         
         # 5. Znižaj temperaturo
         T = max(koncna_temp, T * ohlajanje)
-        
-        # Začasni izpis napredka (za vsako tisočo iteracijo)
-        if (i + 1) % 1000 == 0:
-            print(f"  Iteracija {i+1}/{iteracij}, T={T:.4f}, Trenutna Delta={delta_trenutni}, Najboljša Delta={najboljsi_delta}")
             
-    return najboljsi_graf, najboljsi_c_ind, najboljsi_delta
-
-# --- Zagon in shranjevanje ---
-
-if __name__ == "__main__":
-    # Parametri za zagon
-    N_VOZLISCA = 24  # Primer za n=24
-    ITERACIJE = 5000  # Za resne poskuse povečajte na 50000+
-    
-    print(f"--- Simulirano ohlajanje za n={N_VOZLISCA} ---")
-    
-    # Izvedi iskanje
-    naj_graf, naj_cind, naj_delta = simulirano_ohlajanje(n=N_VOZLISCA, iteracij=ITERACIJE)
-    
-    print("\n--- KONČNI REZULTAT ---")
-    print(f"Najboljša najdena Delta(G): {naj_delta}")
-    print(f"c_ind(G): {naj_cind}")
-    
-    # Shranjevanje grafa v format graph6
-    graph6_zapis = nx.to_graph6_bytes(naj_graf, header=False).decode('ascii').strip()
-    print(f"Graf6 zapis: {graph6_zapis}")
-    
-    # Shranjevanje v CSV
-    csv_datoteka = 'najboljsi_grafi_ohlajanje.csv'
-    file_exists = os.path.isfile(csv_datoteka)
-    
-    with open(csv_datoteka, mode='a', newline='') as file:
-        writer = csv.writer(file)
-        if not file_exists:
-            writer.writerow(['n', 'c_ind', 'Delta', 'graph6', 'cas'])
-        
-        cas = time.strftime("%Y-%m-%d %H:%M:%S")
-        writer.writerow([N_VOZLISCA, naj_cind, naj_delta, graph6_zapis, cas])
-        
-    print(f"Rezultat shranjen v {csv_datoteka}.")
+    # Vrnemo slovar z vsemi pomembnimi podatki
+    graph6_zapis = nx.to_graph6_bytes(najboljsi_graf, header=False).decode('ascii').strip()
+    return {
+        'n': n,
+        'zacetna_temp': zacetna_temp,
+        'koncna_temp': koncna_temp,
+        'ohlajanje': ohlajanje,
+        'iteracij': iteracij,
+        'seme': seme,
+        'c_ind': najboljsi_c_ind,
+        'delta': najboljsi_delta,
+        'graph6': graph6_zapis
+    }
