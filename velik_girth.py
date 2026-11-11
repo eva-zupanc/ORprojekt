@@ -5,7 +5,7 @@ import subprocess # Knjižnica, ki omogoča, da zaženemo drug program (tu nauty
 from pathlib import Path
 
 import networkx as nx # Knjižnica za delo z grafi
-from financni_praktikum import c_ind
+from funkcija_c_ind import c_ind
 
 
 # Stevila vozlisc, ki jih zelimo pregledati
@@ -111,4 +111,10 @@ for n in velikosti:
 #Stevilo pregledanih grafov: 7574
 #Najmanjsa delta: 2
 #Grafi z najmanjso delto: [49, 51, 53, 142, 152, 973]
+#Shranjeno v: rezultati_girth24-girth6.csv
+
+#REZULTATI ZA n=24
+#Stevilo pregledanih grafov: 1620479
+#Najmanjsa delta: 2
+#Grafi z najmanjso delto: [49, 51, 53, 142, 152, 14454, 40247, 72042, 74181, 109846, 122505, 200635, 221941, 291104, 341055, 405915, 506539, 689171, 825301, 829154]
 #Shranjeno v: rezultati_girth24.csv

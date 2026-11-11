@@ -1,5 +1,5 @@
 import networkx as nx
-from financni_praktikum import c_ind
+from funkcija_c_ind import c_ind
 
 def generalized_petersen(n, k):
     G = nx.Graph()
