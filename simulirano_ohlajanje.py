@@ -19,7 +19,7 @@ def je_povezan_in_kubicen(G):
 def nakljucni_kubicen_graf(n):
     """Generira naključen povezan kubičen graf z n vozlišči."""
     if n % 2 != 0 or n < 4:     
-    # sodost števila vozlišč izhaja iz leme o rokovanju (stopnja(G)*n=3*n mora biti sodo, torej mora biti n sodo)
+    # sodost števila vozlišč izhaja iz leme o rokovanju (stopnja(G) * n = 3 * n mora biti sodo, torej mora biti n sodo)
         raise ValueError("n mora biti sodo in vsaj 4.")
     # Uporabimo networkx generator, nato preverimo pogoje
     while True:

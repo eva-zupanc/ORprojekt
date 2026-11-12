@@ -3,7 +3,7 @@ import time
 import os
 from simulirano_ohlajanje import simulirano_ohlajanje
 
-def shrani_v_csv(rezultat, ime_datoteke='rezultati_ohlajanja.csv'):
+def shrani_v_csv(rezultat, cas, ime_datoteke='rezultati_ohlajanja.csv'):
     """Doda eno vrstico v CSV datoteko."""
     file_exists = os.path.isfile(ime_datoteke)
     
@@ -15,14 +15,14 @@ def shrani_v_csv(rezultat, ime_datoteke='rezultati_ohlajanja.csv'):
         if not file_exists:
             writer.writeheader() # Napiši glavo, če datoteka še ne obstaja
             
-        rezultat['cas'] = time.strftime("%Y-%m-%d %H:%M:%S")
+        rezultat['cas'] = cas
         writer.writerow(rezultat)
 
 if __name__ == "__main__":
     # --- NASTAVITVE POSKUSA ---
     # velikosti_grafov = range(24, 61)  # Za katere n-je želimo iskati
-    velikosti_grafov = [28, 30]
-    st_ponovitev = 3                    # Kolikokrat poženemo za vsak n (različna semena)
+    velikosti_grafov = [24, 26, 28]
+    st_ponovitev = 5                    # kolikokrat poženemo za vsak n (različna semena)
     
     print("Začenjam serijo poskusov ...")
     
@@ -31,6 +31,8 @@ if __name__ == "__main__":
             print(f"Poganjam: n={n}, seme={seme}")
             
             # Poženemo simulacijo
+            zacetek = time.time()
+
             rezultat = simulirano_ohlajanje(
                 n=n, 
                 zacetna_temp=2.0,   # Malo višja začetna temperatura za boljše raziskovanje
@@ -41,8 +43,10 @@ if __name__ == "__main__":
                 beta=0.5
             )
             
+            konec = time.time()
+
             # Shranimo rezultat
-            shrani_v_csv(rezultat)
+            shrani_v_csv(rezultat, (konec-zacetek)/60)
             
             print(f"n = {n}, seme: {seme}")
             print(f"  -> Najdena Delta: {rezultat['delta']}, c_ind: {rezultat['c_ind']}")
