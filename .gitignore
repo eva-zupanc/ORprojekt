@@ -15,3 +15,9 @@ __pycache__/
 
 # Generirane datoteke grafov
 grafi*.g6
+girth/*.g6
+girth/*.graph6
+snarki/*.g6
+snarki/*.graph6
+planarni/*.g6
+planarni/*.graph6
