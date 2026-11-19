@@ -21,7 +21,7 @@ def shrani_v_csv(rezultat, cas, ime_datoteke='rezultati_ohlajanja.csv'):
 if __name__ == "__main__":
     # --- NASTAVITVE POSKUSA ---
     # velikosti_grafov = range(24, 61)  # Za katere n-je želimo iskati
-    velikosti_grafov = [24, 26, 28]
+    velikosti_grafov = [30, 32, 34]
     st_ponovitev = 5                    # kolikokrat poženemo za vsak n (različna semena)
     
     print("Začenjam serijo poskusov ...")
